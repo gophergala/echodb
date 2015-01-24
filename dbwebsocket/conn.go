@@ -89,6 +89,12 @@ func (c *connection) writePump(name string) {
   }
 }
 
+func Emit(name, message string) {
+  if h, ok := hubs[name]; ok {
+    h.broadcast <- []byte(message)
+  }
+}
+
 // serverWs handles websocket requests from the peer.
 func ServeWs(name string, w http.ResponseWriter, r *http.Request) {
   ws, err := upgrader.Upgrade(w, r, nil)
@@ -99,5 +105,4 @@ func ServeWs(name string, w http.ResponseWriter, r *http.Request) {
   c := &connection{send: make(chan []byte, 256), ws: ws}
   FetchOrInitHub(name).register <- c
   go c.writePump(name)
-  c.readPump(name)
 }

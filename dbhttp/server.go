@@ -77,6 +77,9 @@ func collectionsController(w http.ResponseWriter, r *http.Request) {
 // get a collection by name
 func collectionController(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
+
+	// an example of how to emit a message to a room
+	dbwebsocket.Emit(params["name"], "{\"id\": 1, \"name\": \"asasa\"}")
 	send(w, r, Response{"success": true, "message": "collection: " + params["name"]})
 }
 
@@ -163,6 +166,7 @@ func router() {
 
 	r.Handle("/ws/{name}", http.HandlerFunc(serveWs)).Methods("GET")
 	r.Handle("/client", http.HandlerFunc(serveHome)).Methods("GET")
+
 	http.Handle("/", r)
 	return
 }
