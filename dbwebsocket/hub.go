@@ -9,8 +9,6 @@ type hub struct {
   register chan *connection
   // Unregister requests from connections.
   unregister chan *connection
-
-  name string
 }
 
 var hubs = make(map[string]hub)
@@ -26,7 +24,7 @@ func FetchOrInitHub(name string) hub {
       connections: make(map[*connection]bool),
     }
     hubs[name] = newhub
-    newhub.run()
+    go newhub.run()
     return newhub
   }
 }
