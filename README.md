@@ -2,7 +2,7 @@ EchoDB
 ===================
 Fault-tolerrent "data-on-wite" NoSQL datastore written in 48hrs.
 
-* Fault-tolerrent NoSQL
+* Fault-tolerrant NoSQL
 * MMAP based datastore
 * Hashtable based indexer
 * Simple HTTP API to manage collections
