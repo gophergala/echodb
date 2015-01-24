@@ -1,4 +1,4 @@
-package main
+package dbhttp
 
 import (
 	"encoding/json"
@@ -149,7 +149,7 @@ func router() {
 }
 
 // main function
-func main() {
+func Start() {
 	router()
 	port := ":8001"
 	log.Println("[HTTP Server]", port)
