@@ -3,14 +3,12 @@ package db
 
 import (
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"path"
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 )
 
 const (
@@ -31,14 +29,13 @@ func OpenDatabase(dbPath string) (*Database, error) {
 }
 
 func (db *Database) bootstrap() error {
-	partsCountFile = path.Join(db.path, PARTS_LENGTH_FILE)
+	partsCountFile := path.Join(db.path, PARTS_LENGTH_FILE)
 	// Create database directory
 	if err := os.MkdirAll(db.path, 0700); err != nil {
 		return err
 	}
 	// Create part file if not exists
-	pFile, err := os.Stat(partsCountFile)
-	if err != nil {
+	if _, err := os.Stat(partsCountFile); err != nil {
 		// Create new part file with default 1 partition size
 		if err := ioutil.WriteFile(partsCountFile, []byte(strconv.Itoa(1)), 0600); err != nil {
 			return err
@@ -54,11 +51,12 @@ func (db *Database) bootstrap() error {
 
 	// Load all collections
 	db.collections = make(map[string]*Collection)
-	if dirContent, err := ioutil.ReadDir(db.path); err != nil {
+	dirContent, err := ioutil.ReadDir(db.path)
+	if err != nil {
 		return err
 	}
 	for _, collectionDir := range dirContent {
-		if !collectionDir.isDir() {
+		if !collectionDir.IsDir() {
 			continue
 		}
 		if db.collections[collectionDir.Name()], err = OpenCollection(db, collectionDir.Name()); err != nil {
@@ -93,7 +91,7 @@ func (db *Database) Create(name string) error {
 
 	if _, exists := db.collections[name]; exists {
 		return fmt.Errorf("Collection %s already exists", name)
-	} else if err := os.MakedirAll(path.Join(db.path, name), 0700); err != nil {
+	} else if err := os.MkdirAll(path.Join(db.path, name), 0700); err != nil {
 		return err
 	} else if db.collections[name], err = OpenCollection(db, name); err != nil {
 		return err
@@ -105,8 +103,8 @@ func (db *Database) Create(name string) error {
 func (db *Database) Get(name string) *Collection {
 	db.access.RLock()
 	defer db.access.RUnlock()
-	if col, exists := db.cols[name]; exists {
-		retrn col
+	if col, exists := db.collections[name]; exists {
+		return col
 	}
 	return nil
 }
@@ -116,9 +114,9 @@ func (db *Database) Delete(name string) error {
 	db.access.Lock()
 	defer db.access.Unlock()
 	if _, exists := db.collections[name]; !exists {
-		return fmt.Errorf("Collection %s does not exist", nameame)
+		return fmt.Errorf("Collection %s does not exist", name)
 	} else if err := db.collections[name].close(); err != nil {
-		return error
+		return err
 	} else if err := os.RemoveAll(path.Join(db.path, name)); err != nil {
 		return err
 	}

@@ -3,11 +3,11 @@ package db
 
 import (
 	"os"
+	"path"
 )
 
 const (
-	INDEX_FILE_SUFFIX = ".index"
-	INDEX_SEP         = "!"
+	INDEX_FILE = "_id.index"
 )
 
 type Collection struct {
@@ -17,9 +17,16 @@ type Collection struct {
 
 func OpenCollection(db *Database, name string) (*Collection, error) {
 	collection := &Collection{db: db, name: name}
-	return collection, collection.checkLoadError()
+	return collection, collection.bootstrap()
 }
 
-func (col *Collection) checkLoadErrro() error {
+func (col *Collection) bootstrap() error {
+	if err := os.MkdirAll(path.Join(col.db.path, col.name), 0700); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (col *Collection) close() error {
 	return nil
 }
