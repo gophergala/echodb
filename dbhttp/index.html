@@ -40,7 +40,7 @@
             appendLog($("<div/>").text(evt.data))
         }
         conn.onerror = function(err) {
-            appendLog($("<div><b>Connection error: " + error + "</b></div>"))
+            appendLog($("<div><b>Connection error: " + err + "</b></div>"))
         }
         conn.onopen = function() {
             appendLog($("<div><b>Connection is opened.</b></div>"))
