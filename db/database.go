@@ -84,6 +84,17 @@ func (db *Database) Close() error {
 	return fmt.Errorf("%v", errs)
 }
 
+// All collections
+func (db *Database) Collections() (ret []string) {
+	db.access.RLock()
+	defer db.access.RUnlock()
+	ret = make([]string, 0, len(db.collections))
+	for name, _ := range db.collections {
+		ret = append(ret, name)
+	}
+	return
+}
+
 // Create Collection
 func (db *Database) Create(name string) error {
 	db.access.Lock()
