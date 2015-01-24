@@ -37,6 +37,14 @@
             appendLog($("<div><b>Connection closed.</b></div>"))
         }
         conn.onmessage = function(evt) {
+            var data = {};
+
+            try {
+                data = JSON.parse(evt.data)
+            }
+            catch (e) {
+                // console.log(e, evt.data)
+            }
             appendLog($("<div/>").text(evt.data))
         }
         conn.onerror = function(err) {
