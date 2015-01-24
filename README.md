@@ -16,6 +16,9 @@ cd echodb
 GOPATH=`pwd`
 
 
+go get github.com/justinas/alice
+go get github.com/gorilla/mux
+
 
 Current status
 ==================
