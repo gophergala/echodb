@@ -4,6 +4,7 @@ package db
 import (
 	"../dbcore"
 	"encoding/json"
+	"fmt"
 	"math/rand"
 	"os"
 	"path"
@@ -91,4 +92,96 @@ func (col *Collection) Insert(doc map[string]interface{}) (id int, err error) {
 	part.Lock.Unlock()
 	col.db.access.RUnlock()
 	return
+}
+
+// Retrieve a document by ID.
+func (col *Collection) FindById(id int) (doc map[string]interface{}, err error) {
+	col.db.access.RLock()
+	defer col.db.access.RUnlock()
+
+	part := col.parts[id%col.db.numParts]
+	part.Lock.RLock()
+	docB, err := part.Read(id)
+	part.Lock.RUnlock()
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(docB, &doc)
+	return
+
+}
+
+// Update a document
+func (col *Collection) Update(id int, doc map[string]interface{}) error {
+	if doc == nil {
+		return fmt.Errorf("Updating %d: input doc may not be nil", id)
+	}
+	docJS, err := json.Marshal(doc)
+	if err != nil {
+		return err
+	}
+	col.db.access.RLock()
+	part := col.parts[id%col.db.numParts]
+	part.Lock.Lock()
+	// Place lock, read back original document and update
+	if err := part.LockUpdate(id); err != nil {
+		part.Lock.Unlock()
+		col.db.access.RUnlock()
+		return err
+	}
+	originalB, err := part.Read(id)
+	if err != nil {
+		part.UnlockUpdate(id)
+		part.Lock.Unlock()
+		col.db.access.RUnlock()
+		return err
+	}
+	var original map[string]interface{}
+	if err = json.Unmarshal(originalB, &original); err != nil {
+		fmt.Printf("Will not attempt to unindex document %d during update\n", id)
+	}
+	if err = part.Update(id, []byte(docJS)); err != nil {
+		part.UnlockUpdate(id)
+		part.Lock.Unlock()
+		col.db.access.RUnlock()
+		return err
+	}
+	part.UnlockUpdate(id)
+	part.Lock.Unlock()
+	col.db.access.RUnlock()
+	return nil
+}
+
+// Delete a document
+func (col *Collection) Delete(id int) error {
+	col.db.access.RLock()
+	part := col.parts[id%col.db.numParts]
+	part.Lock.Lock()
+	// Place lock, read back original document and delete document
+	if err := part.LockUpdate(id); err != nil {
+		part.Lock.Unlock()
+		col.db.access.RUnlock()
+		return err
+	}
+	originalB, err := part.Read(id)
+	if err != nil {
+		part.UnlockUpdate(id)
+		part.Lock.Unlock()
+		col.db.access.RUnlock()
+		return err
+	}
+	var original map[string]interface{}
+	if err = json.Unmarshal(originalB, &original); err != nil {
+		fmt.Printf("Will not attempt to unindex document %d during delete\n", id)
+	}
+	if err = part.Delete(id); err != nil {
+		part.UnlockUpdate(id)
+		part.Lock.Unlock()
+		col.db.access.RUnlock()
+		return err
+	}
+	part.UnlockUpdate(id)
+	part.Lock.Unlock()
+	col.db.access.RUnlock()
+	return nil
 }

@@ -25,5 +25,31 @@ func main() {
 	fmt.Println("DocumentID")
 	fmt.Println(docId)
 
+	doc, err := books.FindById(docId)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Document", docId, "is", doc)
+
+	err = books.Update(docId, map[string]interface{}{
+		"name":   "hack in go",
+		"author": "me",
+		"isbn":   "234238729837"})
+	if err != nil {
+		panic(err)
+	}
+
+	doc, err = books.FindById(docId)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Document", docId, "is", doc)
+
+	if err := books.Delete(docId); err != nil {
+		panic(err)
+	}
+
 	dbhttp.Start()
 }

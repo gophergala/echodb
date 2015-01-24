@@ -4,11 +4,13 @@ package db
 import (
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"path"
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 const (
@@ -24,6 +26,7 @@ type Database struct {
 
 // Open database by path, returns errors if fails
 func OpenDatabase(dbPath string) (*Database, error) {
+	rand.Seed(time.Now().UnixNano()) //RNG
 	db := &Database{path: dbPath, access: new(sync.RWMutex)}
 	return db, db.bootstrap()
 }
