@@ -79,7 +79,10 @@ func collectionController(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
 	// an example of how to emit a message to a room
-	dbwebsocket.Emit(params["name"], "{\"id\": 1, \"name\": \"asasa\"}")
+	mapD := map[string]interface{}{"id": 1, "something": "asasa", "apple": 5, "lettuce": 7}
+	mapB, _ := json.Marshal(mapD)
+
+	dbwebsocket.Emit(params["name"], mapB)
 	send(w, r, Response{"success": true, "message": "collection: " + params["name"]})
 }
 
