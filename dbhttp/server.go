@@ -8,6 +8,8 @@ import (
 	"log"
 	"net/http"
 	"time"
+	"../dbwebsocket"
+	"text/template"
 )
 
 func simpleLogger(next http.Handler) http.Handler {
@@ -123,6 +125,21 @@ func deleteDocumentController(w http.ResponseWriter, r *http.Request) {
 	send(w, r, Response{"success": true, "message": "delete document " + params["id"] + " in: " + params["name"]})
 }
 
+func serveWs(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	dbwebsocket.ServeWs(params["name"], w, r)
+}
+
+
+var homeTempl = template.Must(template.ParseFiles("./dbhttp/index.html"))
+func serveHome(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	homeTempl.Execute(w, r.Host)
+}
+
+
 // ROUTER
 func router() {
 	stdChain := alice.New(simpleLogger, recoverHandler, setHeaders)
@@ -144,6 +161,8 @@ func router() {
 	r.Handle("/colls/{name}/docs/{id}", stdChain.Then(http.HandlerFunc(updateDocumentController))).Methods("PUT")
 	r.Handle("/colls/{name}/docs/{id}", stdChain.Then(http.HandlerFunc(deleteDocumentController))).Methods("DELETE")
 
+	r.Handle("/ws/{name}", http.HandlerFunc(serveWs)).Methods("GET")
+	r.Handle("/client", http.HandlerFunc(serveHome)).Methods("GET")
 	http.Handle("/", r)
 	return
 }
