@@ -6,23 +6,38 @@ import (
   "log"
   "net/http"
   "time"
-  "strconv"
   "github.com/justinas/alice"
   "github.com/gorilla/mux"
 )
 
-func simpleLog(w http.ResponseWriter, r *http.Request) {
-  // Shame on you! Make custom wrapper to HTTPHandler or something similar...
-  // But if that's working then ok for now :)
-  timestamp, _ := strconv.Atoi(w.Header().Get("Request-Start"))
-  delta := time.Now().Unix() - int64(timestamp)
-  log.Println(r.RemoteAddr, r.Method, r.URL, 200, delta)
+
+func simpleLogger(next http.Handler) http.Handler {
+  return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    t1 := time.Now()
+    next.ServeHTTP(w, r)
+    t2 := time.Now()
+
+    log.Println(r.RemoteAddr, r.Method, r.URL, 200, t2.Sub(t1))
+  })
+}
+
+func recoverHandler(next http.Handler) http.Handler {
+  fn := func(w http.ResponseWriter, r *http.Request) {
+    defer func() {
+      if err := recover(); err != nil {
+        log.Printf("panic: %+v", err)
+        http.Error(w, http.StatusText(500), 500)
+      }
+    }()
+
+    next.ServeHTTP(w, r)
+  }
+
+  return http.HandlerFunc(fn)
 }
 
 func setHeaders(next http.Handler) http.Handler {
   return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-    // it's a very lame way of storing timestamp. There should be some other way to do this. For now it's not important.
-    w.Header().Set("Request-Start", fmt.Sprintf("%v", time.Now().Unix()))
     w.Header().Set("Content-Type", "application/json")
     next.ServeHTTP(w, r)
   })
@@ -43,9 +58,7 @@ func (r Response) String() (s string) {
 }
 
 func send(w http.ResponseWriter, r *http.Request, json Response) {
-  w.Header().Set("Content-Lenght", fmt.Sprintf("%v",len(json)))
   fmt.Fprint(w, json)
-  simpleLog(w, r)
 }
 
 //Controllers
@@ -113,7 +126,7 @@ func deleteDocumentController(w http.ResponseWriter, r *http.Request) {
 
 // ROUTER
 func router() {
-  stdChain := alice.New(setHeaders)
+  stdChain := alice.New(simpleLogger, recoverHandler, setHeaders)
 
   r := mux.NewRouter()
 
