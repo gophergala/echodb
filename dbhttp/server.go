@@ -194,7 +194,7 @@ func updateDocumentController(w http.ResponseWriter, r *http.Request) {
   	return
   }
 
-	send(w, r, Response{"success": true, "id": id})
+	send(w, r, doc)
 }
 
 // delete document
@@ -220,7 +220,7 @@ func deleteDocumentController(w http.ResponseWriter, r *http.Request) {
   	return
   }
 
-	send(w, r, Response{"success": true, "id": id})
+	send(w, r, Response{"id": id})
 }
 
 func serveWs(w http.ResponseWriter, r *http.Request) {
