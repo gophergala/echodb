@@ -1,8 +1,8 @@
 package main
 
 import (
-	"./db"
 	"fmt"
+	"github.com/gophergala/echodb/db"
 )
 
 func main() {
