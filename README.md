@@ -19,7 +19,8 @@ cd echodb
 export GOPATH=`pwd`
 go get github.com/gophergala/echodb
 cp -r src/github.com/gophergala/echodb/todoapp bin/todoapp
-./bin/echodb
+cd bin (important step, we have relative path in templates :()
+./echodb
 ```
 
 There is a sample todo app at http://localhost:8001/client [try it in
