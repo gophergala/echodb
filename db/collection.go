@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"../dbwebsocket"
 )
 
 const (
@@ -78,7 +79,7 @@ func (col *Collection) Insert(doc map[string]interface{}) (id int, err error) {
 	// Put document data into collection
 	part.Lock.Lock()
 	if _, err = part.Insert(id, []byte(docJS)); err != nil {
-		part.Lock.Unlock()
+		part.Lock. Unlock()
 		col.db.access.RUnlock()
 		return
 	}
@@ -91,6 +92,8 @@ func (col *Collection) Insert(doc map[string]interface{}) (id int, err error) {
 	part.UnlockUpdate(id)
 	part.Lock.Unlock()
 	col.db.access.RUnlock()
+
+	emitDoc(col.name, "create", doc)
 	return
 }
 
@@ -149,6 +152,8 @@ func (col *Collection) Update(id int, doc map[string]interface{}) error {
 	part.UnlockUpdate(id)
 	part.Lock.Unlock()
 	col.db.access.RUnlock()
+
+	emitDoc(col.name, "update", doc)
 	return nil
 }
 
@@ -183,5 +188,15 @@ func (col *Collection) Delete(id int) error {
 	part.UnlockUpdate(id)
 	part.Lock.Unlock()
 	col.db.access.RUnlock()
+	emitDoc(col.name, "delete", map[string]interface{}{"_id": id})
 	return nil
+}
+
+func emitDoc(name, action string, doc map[string]interface{}) {
+	emit := map[string]interface{}{"__action": action, "__doc": doc}
+	emitDocJS, err := json.Marshal(emit)
+	if err != nil {
+		return
+	}
+	dbwebsocket.Emit(name, emitDocJS)
 }

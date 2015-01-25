@@ -88,7 +88,7 @@ func newCollectionController(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	echodb.Create(params["name"])
 
-	col := echodb.Get(params["name"])
+	// col := echodb.Get(params["name"])
 	send(w, r, Response{"success": true, "message": "you have created a collection"})
 }
 
@@ -176,9 +176,11 @@ func router() {
 }
 
 var echodb *db.Database
+
 // main function
 func Start() {
 	echodb, _ = db.OpenDatabase("/tmp/echodb")
+
 	router()
 	port := ":8001"
 	log.Println("[HTTP Server]", port)
