@@ -119,6 +119,10 @@ func (col *Collection) FindById(id int) (doc map[string]interface{}, err error) 
 func (col *Collection) All() chan map[string]interface{} {
 	count := col.Count()
 	c := make(chan map[string]interface{}, count)
+	if count == 0 {
+		close(c)
+		return c
+	}
 	partDiv := count / col.db.numParts
 	for i := 0; i < col.db.numParts; i++ {
 		part := col.parts[i]

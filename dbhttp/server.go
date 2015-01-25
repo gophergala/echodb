@@ -9,9 +9,9 @@ import (
 	"github.com/justinas/alice"
 	"log"
 	"net/http"
+	"strconv"
 	"text/template"
 	"time"
-	"strconv"
 )
 
 func simpleLogger(next http.Handler) http.Handler {
@@ -90,7 +90,7 @@ func newCollectionController(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	status := false
 	err := echodb.Create(params["name"])
-	if err == nil{
+	if err == nil {
 		status = true
 	}
 
@@ -102,18 +102,21 @@ func deleteCollectionController(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	status := false
 	err := echodb.Delete(params["name"])
-	if err == nil{
+	if err == nil {
 		status = true
 	}
 	send(w, r, Response{"success": status})
 }
 
 // list documents
-// TODO - there's currently no way to list documents
 func documentsController(w http.ResponseWriter, r *http.Request) {
-	// params := mux.Vars(r)
-
-	send(w, r, nil)
+	params := mux.Vars(r)
+	col := echodb.Get(params["name"])
+	docs := make(map[string]interface{})
+	for doc := range col.All() {
+		docs[strconv.Itoa(doc["_id"].(int))] = doc
+	}
+	send(w, r, docs)
 }
 
 // read document
@@ -141,25 +144,25 @@ func newDocumentController(w http.ResponseWriter, r *http.Request) {
 
 	var doc map[string]interface{}
 	decoder := json.NewDecoder(r.Body)
-  err := decoder.Decode(&doc)
-  if err != nil {
-    http.Error(w, http.StatusText(400), 400)
-    return
-  }
+	err := decoder.Decode(&doc)
+	if err != nil {
+		http.Error(w, http.StatusText(400), 400)
+		return
+	}
 
-  col := echodb.Get(params["name"])
+	col := echodb.Get(params["name"])
 
-  if col == nil {
-  	http.Error(w, http.StatusText(404), 404)
-  	return
-  }
+	if col == nil {
+		http.Error(w, http.StatusText(404), 404)
+		return
+	}
 
-  id, docErr := col.Insert(doc)
-  if docErr != nil {
-  	http.Error(w, http.StatusText(500), 500)
-  	return
-  }
-  log.Println(id)
+	id, docErr := col.Insert(doc)
+	if docErr != nil {
+		http.Error(w, http.StatusText(500), 500)
+		return
+	}
+	log.Println(id)
 	send(w, r, Response{"id": id})
 }
 
@@ -169,30 +172,30 @@ func updateDocumentController(w http.ResponseWriter, r *http.Request) {
 
 	var doc map[string]interface{}
 	decoder := json.NewDecoder(r.Body)
-  err := decoder.Decode(&doc)
-  if err != nil {
-    http.Error(w, http.StatusText(400), 400)
-    return
-  }
+	err := decoder.Decode(&doc)
+	if err != nil {
+		http.Error(w, http.StatusText(400), 400)
+		return
+	}
 
-  col := echodb.Get(params["name"])
+	col := echodb.Get(params["name"])
 
-  if col == nil {
-  	http.Error(w, http.StatusText(404), 404)
-  	return
-  }
+	if col == nil {
+		http.Error(w, http.StatusText(404), 404)
+		return
+	}
 
-  id, atoiErr := strconv.Atoi(params["id"])
+	id, atoiErr := strconv.Atoi(params["id"])
 	if atoiErr != nil {
 		http.Error(w, http.StatusText(400), 400)
 		return
 	}
 
-  docErr := col.Update(id, doc)
-  if docErr != nil {
-  	http.Error(w, http.StatusText(500), 500)
-  	return
-  }
+	docErr := col.Update(id, doc)
+	if docErr != nil {
+		http.Error(w, http.StatusText(500), 500)
+		return
+	}
 
 	send(w, r, doc)
 }
@@ -201,24 +204,24 @@ func updateDocumentController(w http.ResponseWriter, r *http.Request) {
 func deleteDocumentController(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
-  col := echodb.Get(params["name"])
+	col := echodb.Get(params["name"])
 
-  if col == nil {
-  	http.Error(w, http.StatusText(404), 404)
-  	return
-  }
+	if col == nil {
+		http.Error(w, http.StatusText(404), 404)
+		return
+	}
 
-  id, atoiErr := strconv.Atoi(params["id"])
+	id, atoiErr := strconv.Atoi(params["id"])
 	if atoiErr != nil {
 		http.Error(w, http.StatusText(400), 400)
 		return
 	}
 
-  docErr := col.Delete(id)
-  if docErr != nil {
-  	http.Error(w, http.StatusText(500), 500)
-  	return
-  }
+	docErr := col.Delete(id)
+	if docErr != nil {
+		http.Error(w, http.StatusText(500), 500)
+		return
+	}
 
 	send(w, r, Response{"id": id})
 }
@@ -273,7 +276,7 @@ func Start() {
 
 	router()
 	fs := http.FileServer(http.Dir("todoapp/static"))
-  http.Handle("/static/", http.StripPrefix("/static/", fs))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
 	port := ":8001"
 	log.Println("[HTTP Server]", port)
 	http.ListenAndServe(port, nil)

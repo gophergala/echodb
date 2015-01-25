@@ -15,7 +15,7 @@ func main() {
 	echodb.Create("books")
 	books := echodb.Get("books")
 
-	for i := 0; i < 1; i++ {
+	for i := 0; i < 10000; i++ {
 		_, err := books.Insert(map[string]interface{}{
 			"name":   "An introduction to programming in Go",
 			"author": "Caleb Doxsey"})
