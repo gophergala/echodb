@@ -1,16 +1,16 @@
 package dbhttp
 
 import (
+	"../db"
+	"../dbwebsocket"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/justinas/alice"
 	"log"
 	"net/http"
-	"time"
-	"../dbwebsocket"
 	"text/template"
-	"../db"
+	"time"
 )
 
 func simpleLogger(next http.Handler) http.Handler {
@@ -78,7 +78,7 @@ func collectionsController(w http.ResponseWriter, r *http.Request) {
 // get a collection by name
 func collectionController(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
- 	col := echodb.Get(params["name"])
+	col := echodb.Get(params["name"])
 
 	send(w, r, Response{"success": true, "count": fmt.Sprintf("%v", col.Count())})
 }
@@ -88,8 +88,8 @@ func newCollectionController(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	echodb.Create(params["name"])
 
-	// col := echodb.Get(params["name"])
-	send(w, r, Response{"success": true, "message": "you have created a collection"})
+	col := echodb.Get(params["name"])
+	send(w, r, Response{"success": true, "message": col})
 }
 
 // delete a collection
@@ -138,14 +138,13 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 	dbwebsocket.ServeWs(params["name"], w, r)
 }
 
-
 var homeTempl = template.Must(template.ParseFiles("./dbhttp/index.html"))
+
 func serveHome(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	homeTempl.Execute(w, r.Host)
 }
-
 
 // ROUTER
 func router() {

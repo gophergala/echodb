@@ -32,6 +32,10 @@ func (part *Partition) Insert(id int, data []byte) (physID int, err error) {
 		return
 	}
 	part.lookup.Put(id, physID)
+	err = part.lookup.Sync()
+	if err != nil {
+		return
+	}
 	return
 }
 
@@ -91,6 +95,11 @@ func (part *Partition) Delete(id int) (err error) {
 	}
 	part.col.Delete(physID[0])
 	part.lookup.Remove(id, physID[0])
+
+	if err := part.lookup.Sync(); err != nil {
+		return err
+	}
+
 	return
 }
 
@@ -110,7 +119,7 @@ func (part *Partition) ForEachDoc(partNum, totalPart int, fun func(id int, doc [
 
 // Return approximate number of documents in the partition.
 func (part *Partition) ApproxDocCount() int {
-	totalPart := 24 // not magic; a larger number makes estimation less accurate, but improves performance
+	totalPart := 1 // not magic; a larger number makes estimation less accurate, but improves performance
 	for {
 		keys, _ := part.lookup.GetPartition(0, totalPart)
 		if len(keys) == 0 {

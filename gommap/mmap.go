@@ -56,3 +56,14 @@ func (m *MMap) Unmap() error {
 	*m = nil
 	return err
 }
+
+// Sync changes in memory to file
+func (m *MMap) Sync() error {
+	dh := m.header()
+	err := sync(dh.Data, uintptr(dh.Len))
+
+	if err != nil {
+		return err
+	}
+	return nil
+}

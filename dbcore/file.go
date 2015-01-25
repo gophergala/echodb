@@ -102,6 +102,14 @@ func (file *DataFile) Close() (err error) {
 	return file.Fh.Close()
 }
 
+// Write buffer to backed file
+func (file *DataFile) Sync() (err error) {
+	if err = file.Buf.Sync(); err != nil {
+		return
+	}
+	return nil
+}
+
 // Clear the entire file and resize it to initial size.
 func (file *DataFile) Clear() (err error) {
 	if err = file.Close(); err != nil {
