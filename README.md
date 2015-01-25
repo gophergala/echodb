@@ -12,13 +12,14 @@ Fault-tolerrent "data-on-wite" NoSQL datastore written in 48hrs.
 Install
 ===================
 ```
-git clone ...
+git clone git@github.com:iapain/echodb.git
 cd echodb
-GOPATH=`pwd`
+export GOPATH=`pwd`
 
 
 go get github.com/justinas/alice
 go get github.com/gorilla/mux
+go get github.com/gorilla/websocket
 ```
 
 Current status
