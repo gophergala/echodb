@@ -4,7 +4,29 @@ import (
 	"./db"
 	"./dbhttp"
 	"fmt"
+  "time"
 )
+
+func temporaryCollectionsCleaner(echodb *db.Database) {
+  for _ = range time.Tick(10 * time.Second) {
+    colls := echodb.Collections()
+    if colls != nil {
+      for _, col := range colls {
+        if col != "todo" {
+          echodb.Delete(col)
+        }
+      }
+    }
+  }
+}
+
+func temporaryTodoCleaner(echodb *db.Database) {
+  for _ = range time.Tick(10 * time.Minute) {
+    echodb.Delete("todo")
+    echodb.Create("todo")
+  }
+}
+
 
 func main() {
 	echodb, err := db.OpenDatabase("/tmp/echodb")
@@ -69,10 +91,13 @@ func main() {
  //  // }
 
   echodb.Create("todo")
+
+  go temporaryCollectionsCleaner(echodb)
+  go temporaryTodoCleaner(echodb)
 	// Gracefully close database
-	if err := echodb.Close(); err != nil {
-		panic(err)
-	}
+	// if err := echodb.Close(); err != nil {
+	// 	panic(err)
+	// }
 
 	dbhttp.Start()
 }
