@@ -39,25 +39,6 @@ type connection struct {
   send chan []byte
 }
 
-// readPump pumps messages from the websocket connection to the hub.
-// func (c *connection) readPump(name string) {
-//   h := hubs[name]
-//   defer func() {
-//     h.unregister <- c
-//     c.ws.Close()
-//   }()
-//   c.ws.SetReadLimit(maxMessageSize)
-//   c.ws.SetReadDeadline(time.Now().Add(pongWait))
-//   c.ws.SetPongHandler(func(string) error { c.ws.SetReadDeadline(time.Now().Add(pongWait)); return nil })
-//   for {
-//     _, message, err := c.ws.ReadMessage()
-//     if err != nil {
-//       break
-//     }
-//     h.broadcast <- message
-//   }
-// }
-
 // write writes a message with the given message type and payload.
 func (c *connection) write(mt int, payload []byte) error {
   c.ws.SetWriteDeadline(time.Now().Add(writeWait))
