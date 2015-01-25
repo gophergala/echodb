@@ -49,12 +49,12 @@ func main() {
 	count := books.Count()
 	fmt.Println("Documents", count)
 
-  err = books.Delete(docId)
-  if err != nil {
-    panic(err)
-  }
+  // err = books.Delete(docId)
+  // if err != nil {
+  //   panic(err)
+  // }
 
-  count = books.Count()
+  // count = books.Count()
   fmt.Println("Documents", count)
 
   // err = echodb.Delete("books")

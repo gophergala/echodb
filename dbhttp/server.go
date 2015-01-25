@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"text/template"
 	"time"
+	"strconv"
 )
 
 func simpleLogger(next http.Handler) http.Handler {
@@ -72,7 +73,8 @@ func rootController(w http.ResponseWriter, r *http.Request) {
 
 // list all of collections
 func collectionsController(w http.ResponseWriter, r *http.Request) {
-	send(w, r, Response{"success": true, "message": "there should be a list of collections"})
+	cols := echodb.Collections()
+	send(w, r, Response{"success": true, "collections": cols})
 }
 
 // get a collection by name
@@ -86,18 +88,28 @@ func collectionController(w http.ResponseWriter, r *http.Request) {
 // create a collection
 func newCollectionController(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	echodb.Create(params["name"])
+	status := false
+	err := echodb.Create(params["name"])
+	if err == nil{
+		status = true
+	}
 
-	col := echodb.Get(params["name"])
-	send(w, r, Response{"success": true, "message": col})
+	send(w, r, Response{"success": status})
 }
 
 // delete a collection
 func deleteCollectionController(w http.ResponseWriter, r *http.Request) {
-	send(w, r, Response{"success": true, "message": "you have deleted the collection"})
+	params := mux.Vars(r)
+	status := false
+	err := echodb.Delete(params["name"])
+	if err == nil{
+		status = true
+	}
+	send(w, r, Response{"success": status})
 }
 
 // list documents
+// TODO - there's currently no way to list documents
 func documentsController(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
@@ -107,29 +119,108 @@ func documentsController(w http.ResponseWriter, r *http.Request) {
 // read document
 func documentController(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
+	col := echodb.Get(params["name"])
+	status := false
 
-	send(w, r, Response{"success": true, "message": "a document " + params["id"] + " in: " + params["name"]})
+	id, atoiErr := strconv.Atoi(params["id"])
+	if atoiErr != nil {
+		http.Error(w, http.StatusText(400), 400)
+		return
+	}
+
+	doc, err := col.FindById(id)
+	if err == nil {
+		status = true
+	}
+	send(w, r, Response{"success": status, "doc": doc})
 }
 
 // read document
 func newDocumentController(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
-	send(w, r, Response{"success": true, "message": "new document" + " in: " + params["name"]})
+	var doc map[string]interface{}
+	decoder := json.NewDecoder(r.Body)
+  err := decoder.Decode(&doc)
+  if err != nil {
+    http.Error(w, http.StatusText(400), 400)
+    return
+  }
+
+  col := echodb.Get(params["name"])
+
+  if col == nil {
+  	http.Error(w, http.StatusText(404), 404)
+  	return
+  }
+
+  id, docErr := col.Insert(doc)
+  if docErr != nil {
+  	http.Error(w, http.StatusText(500), 500)
+  	return
+  }
+
+	send(w, r, Response{"success": true, "id": id})
 }
 
 // update document
 func updateDocumentController(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
-	send(w, r, Response{"success": true, "message": "update document " + params["id"] + " in: " + params["name"]})
+	var doc map[string]interface{}
+	decoder := json.NewDecoder(r.Body)
+  err := decoder.Decode(&doc)
+  if err != nil {
+    http.Error(w, http.StatusText(400), 400)
+    return
+  }
+
+  col := echodb.Get(params["name"])
+
+  if col == nil {
+  	http.Error(w, http.StatusText(404), 404)
+  	return
+  }
+
+  id, atoiErr := strconv.Atoi(params["id"])
+	if atoiErr != nil {
+		http.Error(w, http.StatusText(400), 400)
+		return
+	}
+
+  docErr := col.Update(id, doc)
+  if docErr != nil {
+  	http.Error(w, http.StatusText(500), 500)
+  	return
+  }
+
+	send(w, r, Response{"success": true, "id": id})
 }
 
 // delete document
 func deleteDocumentController(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
-	send(w, r, Response{"success": true, "message": "delete document " + params["id"] + " in: " + params["name"]})
+  col := echodb.Get(params["name"])
+
+  if col == nil {
+  	http.Error(w, http.StatusText(404), 404)
+  	return
+  }
+
+  id, atoiErr := strconv.Atoi(params["id"])
+	if atoiErr != nil {
+		http.Error(w, http.StatusText(400), 400)
+		return
+	}
+
+  docErr := col.Delete(id)
+  if docErr != nil {
+  	http.Error(w, http.StatusText(500), 500)
+  	return
+  }
+
+	send(w, r, Response{"success": true, "id": id})
 }
 
 func serveWs(w http.ResponseWriter, r *http.Request) {
@@ -155,14 +246,14 @@ func router() {
 	r.Handle("/", stdChain.Then(http.HandlerFunc(rootController)))
 
 	// collection routers
-	r.Handle("/colls", stdChain.Then(http.HandlerFunc(collectionsController)))
-	r.Handle("/colls/{name}", stdChain.Then(http.HandlerFunc(collectionController)))
+	r.Handle("/colls", stdChain.Then(http.HandlerFunc(collectionsController))).Methods("GET")
+	r.Handle("/colls/{name}", stdChain.Then(http.HandlerFunc(collectionController))).Methods("GET")
 	r.Handle("/colls", stdChain.Then(http.HandlerFunc(newCollectionController))).Methods("POST")
 	r.Handle("/colls/{name}", stdChain.Then(http.HandlerFunc(deleteCollectionController))).Methods("DELETE")
 
 	// document routers
-	r.Handle("/colls/{name}/docs", stdChain.Then(http.HandlerFunc(documentsController)))
-	r.Handle("/colls/{name}/docs/{id}", stdChain.Then(http.HandlerFunc(documentController)))
+	r.Handle("/colls/{name}/docs", stdChain.Then(http.HandlerFunc(documentsController))).Methods("GET")
+	r.Handle("/colls/{name}/docs/{id}", stdChain.Then(http.HandlerFunc(documentController))).Methods("GET")
 	r.Handle("/colls/{name}/docs", stdChain.Then(http.HandlerFunc(newDocumentController))).Methods("POST")
 	r.Handle("/colls/{name}/docs/{id}", stdChain.Then(http.HandlerFunc(updateDocumentController))).Methods("PUT")
 	r.Handle("/colls/{name}/docs/{id}", stdChain.Then(http.HandlerFunc(deleteDocumentController))).Methods("DELETE")
