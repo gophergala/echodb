@@ -15,13 +15,17 @@ func main() {
 	echodb.Create("books")
 	books := echodb.Get("books")
 
-	for i := 0; i < 1000000; i++ {
+	for i := 0; i < 1; i++ {
 		_, err := books.Insert(map[string]interface{}{
 			"name":   "An introduction to programming in Go",
 			"author": "Caleb Doxsey"})
 		if err != nil {
 			panic(err)
 		}
+	}
+
+	for doc := range books.All() {
+		fmt.Println(doc)
 	}
 
 	echodb.Close()

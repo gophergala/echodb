@@ -79,7 +79,7 @@ func (col *Collection) Insert(doc map[string]interface{}) (id int, err error) {
 	// Put document data into collection
 	part.Lock.Lock()
 	if _, err = part.Insert(id, []byte(docJS)); err != nil {
-		part.Lock. Unlock()
+		part.Lock.Unlock()
 		col.db.access.RUnlock()
 		return
 	}
@@ -113,6 +113,26 @@ func (col *Collection) FindById(id int) (doc map[string]interface{}, err error) 
 	err = json.Unmarshal(docB, &doc)
 	return
 
+}
+
+// Cursor to all records in collection
+func (col *Collection) All() chan map[string]interface{} {
+	count := col.Count()
+	c := make(chan map[string]interface{}, count)
+	partDiv := count / col.db.numParts
+	for i := 0; i < col.db.numParts; i++ {
+		part := col.parts[i]
+		for j := 0; j < partDiv; j++ {
+			for d := range part.All(j, partDiv) {
+				doc := make(map[string]interface{})
+				json.Unmarshal(d.Data, &doc)
+				doc["_id"] = d.Id
+				c <- doc
+			}
+		}
+	}
+	close(c)
+	return c
 }
 
 // Update a document

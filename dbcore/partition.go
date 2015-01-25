@@ -117,6 +117,28 @@ func (part *Partition) ForEachDoc(partNum, totalPart int, fun func(id int, doc [
 	return true
 }
 
+type docData struct {
+	Id   int
+	Data []byte
+}
+
+// Cursor based fetch
+func (part *Partition) All(partNum, totalPart int) chan docData {
+	c := make(chan docData, totalPart)
+	ids, physIDs := part.lookup.GetPartition(partNum, totalPart)
+	for i, id := range ids {
+		data := part.col.Read(physIDs[i])
+		if data != nil {
+			c <- docData{id, data}
+		} else {
+			close(c)
+			return c
+		}
+	}
+	close(c)
+	return c
+}
+
 // Return approximate number of documents in the partition.
 func (part *Partition) ApproxDocCount() int {
 	totalPart := 1 // not magic; a larger number makes estimation less accurate, but improves performance
