@@ -49,6 +49,26 @@ func main() {
 	count := books.Count()
 	fmt.Println("Documents", count)
 
+  err = books.Delete(docId)
+  if err != nil {
+    panic(err)
+  }
+
+  count = books.Count()
+  fmt.Println("Documents", count)
+
+  // err = echodb.Delete("books")
+  // if err != nil {
+  //   panic(err)
+  // }
+
+  // books = echodb.Get("books")
+  // if books != nil {
+  //   count = books.Count()
+  //   fmt.Println("Documents", count)
+  // }
+
+
 	// Gracefully close database
 	if err := echodb.Close(); err != nil {
 		panic(err)

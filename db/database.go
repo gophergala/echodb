@@ -11,6 +11,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"../dbwebsocket"
+	"encoding/json"
 )
 
 const (
@@ -135,5 +137,10 @@ func (db *Database) Delete(name string) error {
 		return err
 	}
 	delete(db.collections, name)
+
+	infoJS, err := json.Marshal(map[string]interface{}{"__action": "destroy", "__collection": true})
+	if err == nil {
+		dbwebsocket.Emit(name, infoJS)
+	}
 	return nil
 }

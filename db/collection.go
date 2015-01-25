@@ -3,13 +3,13 @@ package db
 
 import (
 	"../dbcore"
+	"../dbwebsocket"
 	"encoding/json"
 	"fmt"
 	"math/rand"
 	"os"
 	"path"
 	"strconv"
-	"../dbwebsocket"
 )
 
 const (
@@ -93,6 +93,7 @@ func (col *Collection) Insert(doc map[string]interface{}) (id int, err error) {
 	part.Lock.Unlock()
 	col.db.access.RUnlock()
 
+	doc["_id"] = id
 	emitDoc(col.name, "create", doc)
 	return
 }
@@ -153,6 +154,7 @@ func (col *Collection) Update(id int, doc map[string]interface{}) error {
 	part.Lock.Unlock()
 	col.db.access.RUnlock()
 
+	doc["_id"] = id
 	emitDoc(col.name, "update", doc)
 	return nil
 }

@@ -71,6 +71,7 @@ func (c *connection) writePump(name string) {
 }
 
 func Emit(name string, message []byte) {
+  log.Println("Emiting", name, string(message))
   if h, ok := hubs[name]; ok {
     h.broadcast <- message
   }
