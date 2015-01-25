@@ -1,18 +1,19 @@
 EchoDB
 ===================
-Fault-tolerrent "data-on-wite" NoSQL datastore written in 48hrs.
+Fault-tolerrent "data-on-wire" NoSQL datastore written in 48hrs.
 
 * Fault-tolerrant NoSQL
 * MMAP based datastore (mostly based on gommap and tiedot wrapper)
 * Hashtable based indexer (based on tiedot implementation)
 * Simple HTTP API to manage collections
-* Data on wire
-* and yes, it's written in 48hrs during GopherGala 2015
+* Data on wire (using websocket)
+* and yes, it's written in 48hrs during
+  [GopherGala](http://gophergala.com/) 2015
 
 Install
 ===================
 ```
-git clone git@github.com:iapain/echodb.git
+git clone git@github.com:gophergala/echodb.git
 cd echodb
 export GOPATH=`pwd`
 
