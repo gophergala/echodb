@@ -2,10 +2,10 @@
 package db
 
 import (
-	"../dbcore"
-	"../dbwebsocket"
 	"encoding/json"
 	"fmt"
+	"github.com/gophergala/echodb/dbcore"
+	"github.com/gophergala/echodb/dbwebsocket"
 	"math/rand"
 	"os"
 	"path"

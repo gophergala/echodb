@@ -1,10 +1,10 @@
 package dbhttp
 
 import (
-	"../db"
-	"../dbwebsocket"
 	"encoding/json"
 	"fmt"
+	"github.com/gophergala/echodb/db"
+	"github.com/gophergala/echodb/dbwebsocket"
 	"github.com/gorilla/mux"
 	"github.com/justinas/alice"
 	"log"

@@ -2,7 +2,7 @@
 package dbcore
 
 import (
-	"../dberr"
+	"github.com/gophergala/echodb/dberr"
 	"sync"
 )
 

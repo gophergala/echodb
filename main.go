@@ -1,9 +1,9 @@
 package main
 
 import (
-	"./db"
-	"./dbhttp"
 	"fmt"
+	"github.com/gophergala/echodb/db"
+	"github.com/gophergala/echodb/dbhttp"
 	"time"
 )
 

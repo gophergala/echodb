@@ -2,7 +2,9 @@
 package db
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/gophergala/echodb/dbwebsocket"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -11,8 +13,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"../dbwebsocket"
-	"encoding/json"
 )
 
 const (

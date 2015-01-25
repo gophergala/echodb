@@ -3,8 +3,8 @@
 package dbcore
 
 import (
-	"../gommap"
 	"fmt"
+	"github.com/gophergala/echodb/gommap"
 	"os"
 )
 
