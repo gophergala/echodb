@@ -126,7 +126,6 @@ func (ht *HashTable) Clear() (err error) {
 
 // Store the entry into a vacant (invalidated or empty) place in the appropriate bucket.
 func (ht *HashTable) Put(key, val int) {
-	fmt.Println("Inserting %d %d to hashtable", key, val)
 	for bucket, entry := HashKey(key), 0; ; {
 		entryAddr := bucket*BUCKET_SIZE + BUCKET_HEADER + entry*ENTRY_SIZE
 		if ht.Buf[entryAddr] != 1 {

@@ -34,7 +34,7 @@ func main() {
 
 	err = books.Update(docId, map[string]interface{}{
 		"name":   "hack in go",
-		"author": "me",
+		"author": "you",
 		"isbn":   "234238729837"})
 	if err != nil {
 		panic(err)
@@ -46,8 +46,11 @@ func main() {
 	}
 
 	fmt.Println("Document", docId, "is", doc)
+	count := books.Count()
+	fmt.Println("Documents", count)
 
-	if err := books.Delete(docId); err != nil {
+	// Gracefully close database
+	if err := echodb.Close(); err != nil {
 		panic(err)
 	}
 
