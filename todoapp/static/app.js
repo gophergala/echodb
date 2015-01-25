@@ -28,7 +28,7 @@ $(function () {
             app.todos.add(data.__doc)
           }
           else if(data.__action === "update") {
-            var model = app.todos.get({id: data.__doc._id})
+            var model = app.todos.findWhere({id: data.__doc._id})
             if(model) {
               model.set('title', data.__doc.title)
               model.set('completed', data.__doc.completed)
@@ -36,7 +36,7 @@ $(function () {
             }
           }
           else if(data.__action === "delete") {
-            var model = app.todos.get({id: data.__doc._id})
+            var model = app.todos.findWhere({id: data.__doc._id})
             if(model) {
               model.url = function() {}
               model.destroy()
