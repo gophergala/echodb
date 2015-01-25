@@ -87,6 +87,10 @@ input[type="checkbox"] {
   text-rendering: optimizeLegibility;
 }
 
+#todoapp h1 span {
+  font-size: 30px;
+}
+
 #header {
   padding-top: 15px;
   border-radius: inherit;
