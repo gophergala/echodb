@@ -120,7 +120,7 @@ func documentsController(w http.ResponseWriter, r *http.Request) {
 func documentController(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	col := echodb.Get(params["name"])
-	status := false
+	// status := false
 
 	id, atoiErr := strconv.Atoi(params["id"])
 	if atoiErr != nil {
@@ -130,9 +130,9 @@ func documentController(w http.ResponseWriter, r *http.Request) {
 
 	doc, err := col.FindById(id)
 	if err == nil {
-		status = true
+		// status = true
 	}
-	send(w, r, Response{"success": status, "doc": doc})
+	send(w, r, doc)
 }
 
 // read document
@@ -159,8 +159,8 @@ func newDocumentController(w http.ResponseWriter, r *http.Request) {
   	http.Error(w, http.StatusText(500), 500)
   	return
   }
-
-	send(w, r, Response{"success": true, "id": id})
+  log.Println(id)
+	send(w, r, Response{"id": id})
 }
 
 // update document
@@ -229,7 +229,7 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 	dbwebsocket.ServeWs(params["name"], w, r)
 }
 
-var homeTempl = template.Must(template.ParseFiles("./dbhttp/index.html"))
+var homeTempl = template.Must(template.ParseFiles("./todoapp/index.html"))
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
 
@@ -272,6 +272,8 @@ func Start() {
 	echodb, _ = db.OpenDatabase("/tmp/echodb")
 
 	router()
+	fs := http.FileServer(http.Dir("todoapp/static"))
+  http.Handle("/static/", http.StripPrefix("/static/", fs))
 	port := ":8001"
 	log.Println("[HTTP Server]", port)
 	http.ListenAndServe(port, nil)

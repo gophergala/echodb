@@ -68,7 +68,7 @@ func main() {
   //   fmt.Println("Documents", count)
   // }
 
-
+  echodb.Create("todo")
 	// Gracefully close database
 	if err := echodb.Close(); err != nil {
 		panic(err)
