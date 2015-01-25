@@ -138,7 +138,7 @@ func (db *Database) Delete(name string) error {
 	}
 	delete(db.collections, name)
 
-	infoJS, err := json.Marshal(map[string]interface{}{"__action": "destroy", "__collection": true})
+	infoJS, err := json.Marshal(map[string]interface{}{"__action": "destroy", "__collection": name})
 	if err == nil {
 		dbwebsocket.Emit(name, infoJS)
 	}

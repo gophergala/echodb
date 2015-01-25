@@ -111,9 +111,9 @@ func deleteCollectionController(w http.ResponseWriter, r *http.Request) {
 // list documents
 // TODO - there's currently no way to list documents
 func documentsController(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
+	// params := mux.Vars(r)
 
-	send(w, r, Response{"success": true, "message": "list of documents in: " + params["name"]})
+	send(w, r, nil)
 }
 
 // read document

@@ -42,6 +42,13 @@ $(function () {
               model.destroy()
             }
           }
+          else if(data.__action === "destroy" && data.__collection && data.__collection === "todo") {
+            app.todos.each(function(m) {
+              m.url = function()
+              m.destroy()
+            })
+
+          }
         }
       }
       catch (e) {
