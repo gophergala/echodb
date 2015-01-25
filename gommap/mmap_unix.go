@@ -21,3 +21,11 @@ func unmap(addr, len uintptr) error {
 	}
 	return nil
 }
+
+func sync(addr, len uintptr) error {
+	_, _, errno := syscall.Syscall(syscall.SYS_MSYNC, addr, len, uintptr(syscall.MS_SYNC))
+	if errno != 0 {
+		return syscall.Errno(errno)
+	}
+	return nil
+}

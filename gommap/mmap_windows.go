@@ -57,3 +57,8 @@ func unmap(addr, len uintptr) error {
 
 	return os.NewSyscallError("CloseHandle", syscall.CloseHandle(syscall.Handle(handle)))
 }
+
+// Not implemented on windows
+func sync(addr, len uintptr) error {
+	return nil
+}

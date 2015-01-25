@@ -124,6 +124,14 @@ func (ht *HashTable) Clear() (err error) {
 	return
 }
 
+// Sync Hashtable mmap to file
+func (ht *HashTable) Sync() (err error) {
+	if err = ht.DataFile.Sync(); err != nil {
+		return
+	}
+	return nil
+}
+
 // Store the entry into a vacant (invalidated or empty) place in the appropriate bucket.
 func (ht *HashTable) Put(key, val int) {
 	for bucket, entry := HashKey(key), 0; ; {
