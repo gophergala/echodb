@@ -8,6 +8,7 @@ Fault-tolerrent "data-on-wire" NoSQL datastore written in 48hrs.
 * Hashtable based indexer (based on tiedot implementation) [done]
 * Simple HTTP API to manage collections [done]
 * Data on wire (using websocket) [almost done]
+* Query Engine [Not Implemented]
 * and yes, it's written in 48hrs during
   [GopherGala](http://gophergala.com/) 2015
 
@@ -36,6 +37,21 @@ go get github.com/justinas/alice
 go get github.com/gorilla/mux
 go get github.com/gorilla/websocket
 ```
+
+Database API
+======================
+```
+Database.Create(collectionName)
+Database.Get(collectionName)
+Database.Delete(collectionName)
+
+Collection.FindById(id)
+Collection.All()
+Collection.Read(id)
+Collection.Delete(id)
+Collection.Update(id, payload)
+```
+
 
 Current status
 ==================
