@@ -19,10 +19,11 @@ mkdir echodb
 cd echodb
 export GOPATH=`pwd`
 go get github.com/gophergala/echodb
-cp -r src/github.com/gophergala/echodb/todoapp bin/todoapp
-cd bin (important step, we have relative path in templates :()
-./echodb
+cd src/github.com/gophergala/echodb/
+go run main.go
 ```
+You may also run it from binary but you need to copy todoapp in bin
+folder
 
 There is a sample todo app at http://localhost:8001/client [try it in
 two browser sessions]
